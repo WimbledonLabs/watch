@@ -1,0 +1,30 @@
+#!/usr/bin/env python3
+
+import subprocess
+import time
+import shlex
+
+from argparse import ArgumentParser
+
+parser = ArgumentParser()
+parser.add_argument("-c", "--command", required=True)
+parser.add_argument("-w", "--watchlist", required=True)
+parser.add_argument("-s", "--sleep_duration", default=0.3)
+
+args = parser.parse_args()
+
+print("Running '''%s''' when %s changes" % (args.command, args.watchlist))
+
+waitcmd = "inotifywait -e modify -e move -e create -e delete -e attrib".split()
+waitcmd.append(args.watchlist)
+
+cmd = shlex.split(args.command)
+
+while True:
+    p = subprocess.Popen(cmd)
+    print("created process %s" % p)
+    subprocess.run(waitcmd)
+    p.kill()
+    time.sleep(args.sleep_duration)
+
+print("Done")
